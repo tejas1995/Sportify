@@ -1,1 +1,2 @@
 # pyScorify
+# pySportify
