@@ -155,7 +155,7 @@ while(True):
     except:
         continue
 
-    if seconds > 30:
+    if seconds > 300:
         score = cricketGame.scoreString()
         if score:
             send_message(cricketGame.title, cricketGame.scoreString())
