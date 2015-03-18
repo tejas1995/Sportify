@@ -7,9 +7,20 @@ from Cricket import *
 from Basketball import *
 from PyQt4 import QtGui, QtCore
 import sys
-pteam = []
-list_teams=['Afghanistan','Australia','Bangladesh','England','India' ,'Ireland','New Zealand', 'Pakistan','Scotland', 'South Africa','Sri Lanka', 'United Arab Emirates', 'West Indies',  'Zimbabwe']
-listi = []
+
+pTeam = [[], []]
+
+listTeams = [['Afghanistan','Australia','Bangladesh',
+                    'England','India' ,'Ireland','New Zealand', 
+                    'Pakistan','Scotland', 'South Africa','Sri Lanka', 
+                    'United Arab Emirates', 'West Indies',  'Zimbabwe'],
+                    
+                    ['Bucks', 'Bulls', 'Cavaliers', 'Celtics', 'Clippers',
+                     'Grizzlies', 'Hawks', 'Heat', 'Hornets', 'Jazz',
+                     'Kings', 'Knicks', 'Lakers', 'Magic', 'Mavericks', 
+                     'Nets', 'Nuggets', 'Pacers', 'Pelicans', 'Pistons', 
+                     'Raptors', 'Rockets', 'Spurs', 'Suns', 'Thunder', 
+                     'Timberwolves', 'Trail Blazers', 'Warriors', 'Wizards', '76ers']]
 
 class Main(QtGui.QMainWindow):
     def __init__(self, parent = None):
@@ -18,11 +29,11 @@ class Main(QtGui.QMainWindow):
         # main button
         self.cric = QtGui.QCheckBox('Cricket', self)
         self.cric.move(20, 20)
-        self.cric.stateChanged.connect(self.addWidget)
+        self.cric.stateChanged.connect(self.addWidget0)
         
         self.bask = QtGui.QCheckBox('Basketball', self)
         self.bask.move(100, 20)
-        self.bask.stateChanged.connect(self.addbWidget)
+        self.bask.stateChanged.connect(self.addWidget1)
 
         self.addButton = QtGui.QPushButton('Submit')
         self.addButton.clicked.connect(self.printf)
@@ -54,62 +65,80 @@ class Main(QtGui.QMainWindow):
 
         # set central widget
         self.setCentralWidget(self.centralWidget)
+        self.test = [None, None]
 
-    def addWidget(self,state):
+    def addWidget0(self, state):
+        print 'Cricket'
+        self.addWidget(0, state)
+
+    def addWidget1(self, state):
+        print 'Basketball'
+        self.addWidget(1, state)
+
+    def addWidget(self, sportNum, state):
         if state == QtCore.Qt.Checked:
-            self.test = Test()
-            self.scrollLayout.addWidget(self.test)
+            self.test[sportNum] = Test(listTeams[sportNum])
+            self.scrollLayout.addWidget(self.test[sportNum])
         else:
-            self.scrollLayout.removeWidget(self.test)
-            self.test.deleteLater()
-            self.test = None
-    def addbWidget(self,state):
-        pass
+            self.scrollLayout.removeWidget(self.test[sportNum])
+            self.test[sportNum].deleteLater()
+            self.test[sportNum] = None
+
     def printf(self):
-        for i in range(len(list_teams)):
-            if self.test.list_checkboxes[i].isChecked():
-                  listi.append(i)      
-        print listi        
-        for i in listi:
-            pteam.append(list_teams[i])
+        listi = [[], []]
+        for i in range(2):
+            for j in range(len(listTeams[i])):
+                if self.test[i].listCheckboxes[j].isChecked():
+                    listi[i].append(j)      
+            print listi[i]        
+            for j in listi[i]:
+                pTeam[i].append(listTeams[i][j])
 
-            
 class Test(QtGui.QWidget):
-    def __init__( self, parent=None):
+    def __init__( self, listTeams, parent=None):
         super(Test, self).__init__(parent)
-        self.list_checkboxes=[]
-        layout = QtGui.QHBoxLayout()
+        self.listCheckboxes = []
 
-        for i in range(len(list_teams)):
-            self.list_checkboxes.append(QtGui.QCheckBox(list_teams[i], self))
-            self.list_checkboxes[i].move(20, 20+40*i)
-            self.list_checkboxes[i].stateChanged.connect(self.selectstuff)
-            layout.addWidget(self.list_checkboxes[i])
+        hBox = []
+        for i in range(len(listTeams)/2):
+            hBox.append([])
+        for i in range(len(listTeams)/2):
+            hBox[i] = QtGui.QHBoxLayout()
+       
+        for i in range(len(listTeams)):
+            self.listCheckboxes.append(QtGui.QCheckBox(listTeams[i], self))
+            self.listCheckboxes[i].move(20 + 40*(i/2), 20+40*(i%2))
+            self.listCheckboxes[i].stateChanged.connect(self.selectstuff)
+            hBox[i/2].addWidget(self.listCheckboxes[i])
 
+        layout = QtGui.QVBoxLayout()
+        for i in range(len(listTeams)/2):
+            layout.addLayout(hBox[i])
         self.setLayout(layout)
+
     def selectstuff(self,state):
         pass
     
-app = QtGui.QApplication(sys.argv)
-myWidget = Main()
-myWidget.show()
-app.exec_()
-print pteam
- 
 def send_message(title, scoreString):
     pynotify.init("image")
     notice = pynotify.Notification(title, scoreString, "cricket.jpg").show()
     return notice
 
-cricketGame=Cricket('http://www.espncricinfo.com/ci/engine/match/index.html?view=live')  
+app = QtGui.QApplication(sys.argv)
+myWidget = Main()
+myWidget.show()
+app.exec_()
+print pTeam
+
+cricketGame = Cricket('http://www.espncricinfo.com/ci/engine/match/index.html?view=live')  
 basketBallGame = Basketball('http://scores.espn.go.com/nba/scoreboard')
 
 timeOld = datetime.datetime.now().replace(microsecond=0)
-cricketGame.set_prefs(pteam)
+cricketGame.set_prefs(pTeam[0])
 cricketGame.parsePage()
 cricketGame.updateWickets()
 
-basketBallGame.set_prefs(['Clippers'])
+basketBallGame.set_prefs(pTeam[1])
 basketBallGame.parsePage()
 basketBallGame.oldTime = basketBallGame.match_time[:];
 
@@ -146,4 +175,4 @@ while(True):
     score = basketBallGame.scoreString()
     if score:
         send_message(basketBallGame.title, score)
-    
+        
