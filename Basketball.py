@@ -14,49 +14,59 @@ class Basketball(Sport):
     def parsePage(self):
         self.team1 = []
         self.team2 = []
-        self.score = []
+        self.score1 = []
+        self.score2 = []
         self.match_time = []
         self.match_status = []
 
-        response= urllib2.urlopen(self.site)
+        response = urllib2.urlopen(self.site)
         html = response.read()
         parsed_html = BeautifulSoup(html)
         
-        matchList = parsed_html.body.find_all('tr', attrs={'class':'component-scoreboard-list live'})
+        matchList = parsed_html.body.find_all('div', attrs={'class':'mod-container mod-no-header-footer mod-scorebox mod-nba-scorebox in-game '})
 
         for match in matchList:
-            team1 = match.find('div', attrs={'class':'team left'}).h3.text
-            team2 = match.find('div', attrs={'class':'team right'}).h3.text
+            x1 = match.find('div', attrs={'class':'team away'})
+            team1 = x1.find('p', attrs={'class': 'team-name'}).text
+            score1 = x1.find('li', attrs={'class': 'finalScore'}).text
 
-            score = match.find('div', attrs={'class':'scores'}).text
+            x2 = match.find('div', attrs={'class':'team home'})
+            team2 = x2.find('p', attrs={'class': 'team-name'}).text
+            score2 = x2.find('li', attrs={'class': 'finalScore'}).text
 
-            match_status = match.find('span', attrs={'class':'time'}).text
-
+            match_status = match.find('div', attrs={'class':'game-status'}).text
+            
             self.team1.append(team1)
             self.team2.append(team2)			
-            self.score.append(score)
+            self.score1.append(score1)
+            self.score2.append(score2)
+            self.match_status.append(match_status)
 
             if ':' in match_status:
-                self.match_status.append(match_status[:3] + " Quarter " + match_status[4:])
-                c = self.match_status[len(self.match_status)-1].index('|')+2
+                c = 0
                 time = 0
 
-                while not self.match_status[len(self.match_status)-1][c] == ':':
-                    time = time*10 + ord(self.match_status[len(self.match_status)-1][c])-48
+                while not match_status[c] == ':':
+                    time = time*10 + ord(match_status[c])-48
                     c = c+1
 				
                 time = time*60
 				
                 sTime = 0
-                c = self.match_status[len(self.match_status)-1].index(':')+1
-                sTime = (ord(self.match_status[len(self.match_status)-1][c])-48)*10 + ord(self.match_status[len(self.match_status)-1][c+1])-48
+                c = match_status.index(':')+1
+                sTime = (ord(match_status[c])-48)*10 + ord(match_status[c+1])-48
                 time = time + sTime
-                time = (ord(self.match_status[len(self.match_status)-1][0])-48)*720 - time
+                time = (ord(match_status[c+3])-48)*720 - time
                 
                 self.match_time.append(time)
             else:
                 self.match_status.append(match_status)
                 self.match_time.append(0)
+            
+        if not len(self.team1) == len(self.oldTime):
+            self.oldTime = []
+            for i in range(len(self.team1)):
+                self.oldTime.append(0)
 
     def set_prefs(self,teams):
         new_teams=[]
@@ -67,30 +77,18 @@ class Basketball(Sport):
     def scoreString(self):
         score = ""
         for i in range(0, len(self.team1)):
-            if( self.team1[i][:3] in self.teams or self.team2[i][:3] in self.teams):
-                try:
-                    x = 0
-                    while self.score[i][x] < '0' or self.score[i][x] > '9':
-                        x += 1
-                    y = x
-                    while self.score[i][y] >= '0' and self.score[i][y] <= '9':
-                        y += 1
-                    score1 = self.score[i][x:y]
-
-                    x = y
-                    while self.score[i][x] < '0' or self.score[i][x] > '9':
-                        x += 1
-                    y = x
-                    while self.score[i][y] >= '0' and self.score[i][y] <= '9':
-                        y += 1
-                    score2 = self.score[i][x:y]
-                except:
-                    return 0
-
-                if self.match_time[i] - self.oldTime[i] >= 10:
-                    score += self.team1[i] + '\t' + str(score1) + '\n'
-                    score += self.team2[i] + '\t' + str(score2) + '\n'
-                    score += self.match_status[i] + '\n\n'
-                    self.oldTime = self.match_time[:]
+            try:
+                if( self.team1[i][:3] in self.teams or self.team2[i][:3] in self.teams):
+                    if self.match_time[i] - self.oldTime[i] >= 120 or (self.match_time[i] == 0 and not self.oldTime[i] == 0):
+                        self.oldTime[i] = self.match_time[i]
+                        score = score + self.team1[i] + '\t' + str(self.score1[i]) + '\n'
+                        score = score + self.team2[i] + '\t' + str(self.score2[i]) + '\n'
+                        score = score + self.match_status[i]
+                        score = score + '\n\n'
+                        
+            except:
+                return ""
+        if score:
+            print score
         return score  
 

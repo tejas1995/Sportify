@@ -102,13 +102,14 @@ def send_message(title, scoreString):
     return notice
 
 cricketGame=Cricket('http://www.espncricinfo.com/ci/engine/match/index.html?view=live')  
-basketBallGame = Basketball('http://www.si.com/nba/schedule')
+basketBallGame = Basketball('http://scores.espn.go.com/nba/scoreboard')
 
 timeOld = datetime.datetime.now().replace(microsecond=0)
 cricketGame.set_prefs(pteam)
 cricketGame.parsePage()
 cricketGame.updateWickets()
 
+basketBallGame.set_prefs(['Clippers'])
 basketBallGame.parsePage()
 basketBallGame.oldTime = basketBallGame.match_time[:];
 
@@ -132,7 +133,7 @@ while(True):
         timeOld = timeNew
     else:
         for i in range(len(cricketGame.inningsL1)):
-            if not cricketGame.getWickets(cricketGame.currInn(cricketGame.inningsL1[i], cricketGame.inningsL2[i])) == cricketGame.wicketList[i]:
+            if cricketGame.getWickets(cricketGame.currInn(cricketGame.inningsL1[i],cricketGame.inningsL2[i])) == cricketGame.wicketList[i]+1:
                 send_message("WICKET!", cricketGame.scoreString(1))
                 cricketGame.updateWickets()   
                 timeOld = timeNew
@@ -144,7 +145,5 @@ while(True):
 
     score = basketBallGame.scoreString()
     if score:
-        send_message(basketBallGame.title, score)      
-
-
-
+        send_message(basketBallGame.title, score)
+    

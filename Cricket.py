@@ -34,7 +34,7 @@ class Cricket(Sport):
         self.currInnings = []
         self.match_status = []
         
-        response= urllib2.urlopen(self.site)
+        response = urllib2.urlopen(self.site)
         html = response.read()
 
         parsed_html = BeautifulSoup(html)
