@@ -40,7 +40,8 @@ class Cricket(Sport):
         parsed_html = BeautifulSoup(html)
         x = parsed_html.body.find('section', attrs={'class':'matches-day-block'})
 
-        matchList = x.find_all('section', attrs={'class':'default-match-block'}        
+        matchList = x.find_all('section', attrs={'class':'default-match-block'})
+        
         liveMatches = []
         for match in matchList:
             if match.find_all('span', attrs={'class':'live-icon'}):
