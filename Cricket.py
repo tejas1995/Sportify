@@ -40,12 +40,8 @@ class Cricket(Sport):
         parsed_html = BeautifulSoup(html)
         x = parsed_html.body.find('section', attrs={'class':'matches-day-block'})
 
-        matchList = x.find_all('section', attrs={'class':'default-match-block'})
-        
-        print matchList
-        
+        matchList = x.find_all('section', attrs={'class':'default-match-block'}        
         liveMatches = []
-        
         for match in matchList:
             if match.find_all('span', attrs={'class':'live-icon'}):
                 liveMatches.append(match)
@@ -54,7 +50,7 @@ class Cricket(Sport):
                 inn1 = match.find('div', attrs={'class':'innings-info-1'}).text
                 inn2 = match.find('div', attrs={'class':'innings-info-2'}).text
                 status = match.find('div',attrs={'class':'match-status'}).text
-                print inn1, inn2, status
+        
                 self.inningsL1.append(inn1)
                 self.inningsL2.append(inn2)
                 self.match_status.append(status)
