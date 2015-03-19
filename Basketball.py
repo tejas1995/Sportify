@@ -4,9 +4,10 @@ import urllib2
 from Sport import *
 
 class Basketball(Sport):
-    def __init__(self, site):
+    def __init__(self, site, time):
         Sport.__init__(self, site)
         self.teams = []
+        self.notifTime = time
         self.image = ""
         self.title = "Basketball Update"
         self.oldTime = []
@@ -79,7 +80,7 @@ class Basketball(Sport):
         for i in range(0, len(self.team1)):
             try:
                 if( self.team1[i][:3] in self.teams or self.team2[i][:3] in self.teams):
-                    if self.match_time[i] - self.oldTime[i] >= 120 or (self.match_time[i] == 0 and not self.oldTime[i] == 0):
+                    if self.match_time[i] - self.oldTime[i] >= self.notifTime or (self.match_time[i] == 0 and not self.oldTime[i] == 0):
                         score = score + self.team1[i]
                         for j in range(20 - len(self.team1[i])):
                             score = score + ' '
