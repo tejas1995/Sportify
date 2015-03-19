@@ -65,14 +65,14 @@ class Main(QtGui.QMainWindow):
 
         # set central widget
         self.setCentralWidget(self.centralWidget)
+        self.showMaximized()
+        self.show()
         self.test = [None, None]
 
     def addWidget0(self, state):
-        print 'Cricket'
         self.addWidget(0, state)
 
     def addWidget1(self, state):
-        print 'Basketball'
         self.addWidget(1, state)
 
     def addWidget(self, sportNum, state):
@@ -87,12 +87,13 @@ class Main(QtGui.QMainWindow):
     def printf(self):
         listi = [[], []]
         for i in range(2):
-            for j in range(len(listTeams[i])):
-                if self.test[i].listCheckboxes[j].isChecked():
-                    listi[i].append(j)      
-            print listi[i]        
-            for j in listi[i]:
-                pTeam[i].append(listTeams[i][j])
+            if self.test[i]:
+                for j in range(len(listTeams[i])):
+                    if self.test[i].listCheckboxes[j].isChecked():
+                        listi[i].append(j)      
+                print listi[i]        
+                for j in listi[i]:
+                    pTeam[i].append(listTeams[i][j])
 
 class Test(QtGui.QWidget):
     def __init__( self, listTeams, parent=None):
@@ -155,7 +156,7 @@ while(True):
     except:
         continue
 
-    if seconds > 300:
+    if minutes >= 5:
         score = cricketGame.scoreString()
         if score:
             send_message(cricketGame.title, cricketGame.scoreString())
