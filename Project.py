@@ -22,6 +22,16 @@ listTeams = [['Afghanistan','Australia','Bangladesh',
                      'Raptors', 'Rockets', 'Spurs', 'Suns', 'Thunder', 
                      'Timberwolves', 'Trail Blazers', 'Warriors', 'Wizards', '76ers']]
 
+
+listTimes = [['2 minutes', '5 minutes', '10 minutes', '15 minutes', '20 minutes', '30 minutes'],
+             ['30 seconds', '1 minute', '2 minutes', '3 minutes', '5 minutes']]
+
+timeDict = [{0:120, 1:300, 2:600, 3:900, 4:1200, 5:1800},
+            {0:30, 1:60, 2:120, 3:180, 4:300}]
+
+#Default time settings
+notifTime = [300, 120]
+
 class Main(QtGui.QMainWindow):
     def __init__(self, parent = None):
         super(Main, self).__init__(parent)
@@ -77,7 +87,7 @@ class Main(QtGui.QMainWindow):
 
     def addWidget(self, sportNum, state):
         if state == QtCore.Qt.Checked:
-            self.test[sportNum] = Test(listTeams[sportNum])
+            self.test[sportNum] = Test(listTeams[sportNum], listTimes[sportNum])
             self.scrollLayout.addWidget(self.test[sportNum])
         else:
             self.scrollLayout.removeWidget(self.test[sportNum])
@@ -91,14 +101,18 @@ class Main(QtGui.QMainWindow):
                 for j in range(len(listTeams[i])):
                     if self.test[i].listCheckboxes[j].isChecked():
                         listi[i].append(j)      
-                print listi[i]        
                 for j in listi[i]:
                     pTeam[i].append(listTeams[i][j])
 
+                for j in range(len(listTimes[i])):
+                    if self.test[i].listTimeButtons[j].isChecked():
+                        notifTime[i] = timeDict[i][j]
+
 class Test(QtGui.QWidget):
-    def __init__( self, listTeams, parent=None):
+    def __init__( self, listTeams, listTimes, parent=None):
         super(Test, self).__init__(parent)
         self.listCheckboxes = []
+        self.listTimeButtons = []
 
         hBox = []
         for i in range(len(listTeams)/2):
@@ -112,9 +126,21 @@ class Test(QtGui.QWidget):
             self.listCheckboxes[i].stateChanged.connect(self.selectstuff)
             hBox[i/2].addWidget(self.listCheckboxes[i])
 
+        hLabel = QtGui.QHBoxLayout()
+        hLabel.addWidget(QtGui.QLabel('Time between notifications:', self))
+
+        hTimeBox = QtGui.QHBoxLayout()
+        for i in range(len(listTimes)):
+            self.listTimeButtons.append(QtGui.QRadioButton(listTimes[i], self))
+            self.listTimeButtons[i].move(20, 20+40*i)
+#           self.listTimeButtons[i].stateChanged.connect(self.selectstuff)
+            hTimeBox.addWidget(self.listTimeButtons[i])
+
         layout = QtGui.QVBoxLayout()
         for i in range(len(listTeams)/2):
             layout.addLayout(hBox[i])
+        layout.addLayout(hLabel)
+        layout.addLayout(hTimeBox)
         self.setLayout(layout)
 
     def selectstuff(self,state):
@@ -132,7 +158,7 @@ app.exec_()
 print pTeam
 
 cricketGame = Cricket('http://www.espncricinfo.com/ci/engine/match/index.html?view=live')  
-basketBallGame = Basketball('http://scores.espn.go.com/nba/scoreboard')
+basketBallGame = Basketball('http://scores.espn.go.com/nba/scoreboard', notifTime[1])
 
 timeOld = datetime.datetime.now().replace(microsecond=0)
 cricketGame.set_prefs(pTeam[0])
@@ -150,13 +176,14 @@ while(True):
     minutes= (diff.seconds - hours*3600)/60
     seconds = (diff.seconds - (hours*3600 + minutes*60))
 	
+    totalTime = 60*minutes + seconds
     
     try:
         cricketGame.parsePage()
     except:
         continue
 
-    if minutes >= 5:
+    if totalTime >= notifTime[0]:
         score = cricketGame.scoreString()
         if score:
             send_message(cricketGame.title, cricketGame.scoreString())
@@ -176,4 +203,3 @@ while(True):
     score = basketBallGame.scoreString()
     if score:
         send_message(basketBallGame.title, score)
-        
