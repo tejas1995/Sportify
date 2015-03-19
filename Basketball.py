@@ -80,15 +80,17 @@ class Basketball(Sport):
             try:
                 if( self.team1[i][:3] in self.teams or self.team2[i][:3] in self.teams):
                     if self.match_time[i] - self.oldTime[i] >= 120 or (self.match_time[i] == 0 and not self.oldTime[i] == 0):
+                        score = score + self.team1[i]
+                        for j in range(20 - len(self.team1[i])):
+                            score = score + ' '
+                        score = score + str(self.score1[i]) + '\n' + self.team2[i]
+                        for j in range(20 - len(self.team2[i])):
+                            score = score + ' '
+                        score = score + str(self.score2[i]) + '\n'
+                        score = score + self.match_status[i] + '\n'
                         self.oldTime[i] = self.match_time[i]
-                        score = score + self.team1[i] + '\t' + str(self.score1[i]) + '\n'
-                        score = score + self.team2[i] + '\t' + str(self.score2[i]) + '\n'
-                        score = score + self.match_status[i]
-                        score = score + '\n\n'
-                        
             except:
                 return ""
-        if score:
-            print score
+        
         return score  
 
