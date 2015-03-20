@@ -26,8 +26,8 @@ listTeams = [['Afghanistan','Australia','Bangladesh',
 listTimes = [['2 minutes', '5 minutes', '10 minutes', '15 minutes', '20 minutes', '30 minutes'],
              ['30 seconds', '1 minute', '2 minutes', '3 minutes', '5 minutes']]
 
-timeDict = [{0:120, 1:300, 2:600, 3:900, 4:1200, 5:1800},
-            {0:30, 1:60, 2:120, 3:180, 4:300}]
+timeList = [[120, 300, 600, 900, 1200, 1800],
+            [30, 60, 120, 180, 300]]
 
 #Default time settings
 notifTime = [300, 120]
@@ -106,7 +106,7 @@ class Main(QtGui.QMainWindow):
 
                 for j in range(len(listTimes[i])):
                     if self.test[i].listTimeButtons[j].isChecked():
-                        notifTime[i] = timeDict[i][j]
+                        notifTime[i] = timeList[i][j]
 
 class Test(QtGui.QWidget):
     def __init__( self, listTeams, listTimes, parent=None):
@@ -133,7 +133,6 @@ class Test(QtGui.QWidget):
         for i in range(len(listTimes)):
             self.listTimeButtons.append(QtGui.QRadioButton(listTimes[i], self))
             self.listTimeButtons[i].move(20, 20+40*i)
-#           self.listTimeButtons[i].stateChanged.connect(self.selectstuff)
             hTimeBox.addWidget(self.listTimeButtons[i])
 
         layout = QtGui.QVBoxLayout()
