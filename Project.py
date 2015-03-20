@@ -31,19 +31,21 @@ timeList = [[120, 300, 600, 900, 1200, 1800],
 
 #Default time settings
 notifTime = [300, 120]
+listTeamsSelected = [[],[]]
 
 class Main(QtGui.QMainWindow):
     def __init__(self, parent = None):
         super(Main, self).__init__(parent)
 
         # main button
-        self.cric = QtGui.QCheckBox('Cricket', self)
-        self.cric.move(20, 20)
-        self.cric.stateChanged.connect(self.addWidget0)
+        self.sportButtons = []
+        self.sportButtons.append(QtGui.QRadioButton('Cricket', self))
+        self.sportButtons[0].move(20, 20)
+        self.sportButtons[0].toggled.connect(self.addWidget0)
         
-        self.bask = QtGui.QCheckBox('Basketball', self)
-        self.bask.move(100, 20)
-        self.bask.stateChanged.connect(self.addWidget1)
+        self.sportButtons.append(QtGui.QRadioButton('Basketball', self))
+        self.sportButtons[1].move(100, 20)
+        self.sportButtons[1].toggled.connect(self.addWidget1)
 
         self.addButton = QtGui.QPushButton('Submit')
         self.addButton.clicked.connect(self.printf)
@@ -64,8 +66,8 @@ class Main(QtGui.QMainWindow):
         self.mainLayout = QtGui.QVBoxLayout()
 
         # add all main to the main vLayout
-        self.mainLayout.addWidget(self.bask)
-        self.mainLayout.addWidget(self.cric)
+        self.mainLayout.addWidget(self.sportButtons[0])
+        self.mainLayout.addWidget(self.sportButtons[1])
         self.mainLayout.addWidget(self.addButton)
         self.mainLayout.addWidget(self.scrollArea)
 
@@ -80,34 +82,47 @@ class Main(QtGui.QMainWindow):
         self.test = [None, None]
 
     def addWidget0(self, state):
-        self.addWidget(0, state)
+        if self.sportButtons[0].isChecked():
+            self.addWidget(0, state)
 
     def addWidget1(self, state):
-        self.addWidget(1, state)
+        if self.sportButtons[1].isChecked():
+            self.addWidget(1, state)
 
     def addWidget(self, sportNum, state):
-        if state == QtCore.Qt.Checked:
-            self.test[sportNum] = Test(listTeams[sportNum], listTimes[sportNum])
-            self.scrollLayout.addWidget(self.test[sportNum])
-        else:
-            self.scrollLayout.removeWidget(self.test[sportNum])
-            self.test[sportNum].deleteLater()
-            self.test[sportNum] = None
+        
+        if not self.test[1-sportNum] == None:
+
+            for j in range(len(listTeams[1-sportNum])):
+                if self.test[1-sportNum].listCheckboxes[j].isChecked():
+                    listTeamsSelected[1-sportNum].append(j)      
+            for j in listTeamsSelected[1-sportNum]:
+                pTeam[1-sportNum].append(listTeams[1-sportNum][j])
+
+            for j in range(len(listTimes[1-sportNum])):
+                if self.test[1-sportNum].listTimeButtons[j].isChecked():
+                    notifTime[1-sportNum] = timeList[1-sportNum][j]
+                
+            self.scrollLayout.removeWidget(self.test[1-sportNum])
+            self.test[1-sportNum].deleteLater()
+            self.test[1-sportNum] = None
+
+        self.test[sportNum] = Test(listTeams[sportNum], listTimes[sportNum])
+        self.scrollLayout.addWidget(self.test[sportNum])
 
     def printf(self):
-        listi = [[], []]
         for i in range(2):
             if self.test[i]:
                 for j in range(len(listTeams[i])):
                     if self.test[i].listCheckboxes[j].isChecked():
-                        listi[i].append(j)      
-                for j in listi[i]:
+                        listTeamsSelected[i].append(j)      
+                for j in listTeamsSelected[i]:
                     pTeam[i].append(listTeams[i][j])
 
                 for j in range(len(listTimes[i])):
                     if self.test[i].listTimeButtons[j].isChecked():
                         notifTime[i] = timeList[i][j]
-
+                        
 class Test(QtGui.QWidget):
     def __init__( self, listTeams, listTimes, parent=None):
         super(Test, self).__init__(parent)
@@ -185,7 +200,7 @@ while(True):
     if totalTime >= notifTime[0]:
         score = cricketGame.scoreString()
         if score:
-            send_message(cricketGame.title, cricketGame.scoreString())
+            send_message(cricketGame.title, score)
         timeOld = timeNew
     else:
         for i in range(len(cricketGame.inningsL1)):
